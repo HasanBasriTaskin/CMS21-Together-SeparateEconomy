@@ -1,0 +1,32 @@
+name: release-guard
+
+# Releases are built locally (the mod cannot be compiled in CI; see tools/release.ps1).
+# This guard fails loudly if a published release is missing its assets.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          assets=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')
+          echo "Assets on $TAG:"; echo "$assets"
+          missing=0
+          for need in TogetherSeparateEconomy.dll SHA256SUMS.txt; do
+            if ! grep -qxF "$need" <<< "$assets"; then
+              echo "::error::Release $TAG is missing the required asset '$need'. Upload it (tools/release.ps1 produces it in dist/)."
+              missing=1
+            fi
+          done
+          exit $missing

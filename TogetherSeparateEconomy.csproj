@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Optional local override (untracked, gitignored): defines <GameDir> for this machine. -->
+  <Import Project="GameDir.props.user" Condition="Exists('$(MSBuildThisFileDirectory)GameDir.props.user')" />
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>TogetherSeparateEconomy</AssemblyName>
+    <RootNamespace>TogetherSeparateEconomy</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <DebugType>none</DebugType>
+    <ModVersionBase>1.0.0</ModVersionBase>
+    <!-- Default Steam path; override with: dotnet build -p:GameDir="D:\Games\Car Mechanic Simulator 2021" -->
+    <GameDir Condition="'$(GameDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Car Mechanic Simulator 2021</GameDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="MelonLoader"><HintPath>$(GameDir)\MelonLoader\MelonLoader.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>$(GameDir)\MelonLoader\0Harmony.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Assembly-CSharp-firstpass"><HintPath>$(GameDir)\MelonLoader\Managed\Assembly-CSharp-firstpass.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Assembly-CSharp"><HintPath>$(GameDir)\MelonLoader\Managed\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Il2Cppmscorlib"><HintPath>$(GameDir)\MelonLoader\Managed\Il2Cppmscorlib.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Il2CppSystem"><HintPath>$(GameDir)\MelonLoader\Managed\Il2CppSystem.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Il2CppSystem.Core"><HintPath>$(GameDir)\MelonLoader\Managed\Il2CppSystem.Core.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnhollowerBaseLib"><HintPath>$(GameDir)\MelonLoader\Managed\UnhollowerBaseLib.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(GameDir)\MelonLoader\Managed\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Newtonsoft.Json"><HintPath>$(GameDir)\MelonLoader\Managed\Newtonsoft.Json.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="CMS21-Together"><HintPath>$(GameDir)\Mods\CMS21-Together.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+
+  <Target Name="GenBuildStamp" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <BuildStampValue>$([System.DateTime]::UtcNow.ToString("yyyyMMddHHmmss"))</BuildStampValue>
+      <BuildStampFile>$(IntermediateOutputPath)BuildStamp.g.cs</BuildStampFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(BuildStampFile)" Lines="[assembly: System.Reflection.AssemblyInformationalVersion(&quot;$(ModVersionBase)+$(BuildStampValue)&quot;)]%0Anamespace TogetherSeparateEconomy { internal static class BuildInfo { public const string Stamp = &quot;$(BuildStampValue)&quot;%3B } }" Overwrite="true" />
+    <ItemGroup>
+      <Compile Include="$(BuildStampFile)" />
+      <FileWrites Include="$(BuildStampFile)" />
+    </ItemGroup>
+  </Target>
+</Project>

@@ -1,0 +1,61 @@
+name: checks
+
+# NOTE: This workflow deliberately does NOT compile the mod. The project references game assemblies
+# (MelonLoader\Managed\*.dll, Assembly-CSharp*.dll) and CMS21-Together.dll, which cannot be committed or
+# downloaded in CI (copyright / redistribution). Builds are done locally; see tools/release.ps1.
+# CI only runs repository hygiene checks.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  privacy-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Private IP addresses, GUIDs, Windows user paths
+        shell: bash
+        run: |
+          set -u
+          fail=0
+          scan() {
+            local title="$1" pattern="$2"; shift 2
+            if git grep -nIE "$pattern" -- . "$@"; then
+              echo "::error::$title found in tracked files (see above)"
+              fail=1
+            fi
+          }
+          # Private IPv4 ranges
+          scan "Private IPv4 address" '(^|[^0-9.])(192\.168|10\.[0-9]{1,3}|172\.(1[6-9]|2[0-9]|3[01]))\.[0-9]{1,3}\.[0-9]{1,3}($|[^0-9])' ':!.github/workflows/checks.yml'
+          # GUID-like player ids (placeholders such as <guid> are fine)
+          scan "GUID-like id" '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' ':!.github/workflows/checks.yml'
+          # Windows user profile paths (<name> / %USERPROFILE% placeholders are fine)
+          scan "Windows user path" '[A-Za-z]:\+Users\+[A-Za-z0-9._ -]+' ':!.github/workflows/checks.yml'
+          exit $fail
+
+  no-binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No game or third-party binaries tracked
+        shell: bash
+        run: |
+          if git ls-files | grep -iE '\.(dll|exe|cms21b|cms21mp)$'; then
+            echo "::error::Game/third-party binaries must not be committed (see list above)"
+            exit 1
+          fi
+
+  markdown-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check markdown links
+        uses: lycheeverse/lychee-action@v2.4.1
+        with:
+          # 429 (rate limit) is accepted; the repository's own URL is excluded so the check also passes before the repo is public.
+          args: --no-progress --max-retries 2 --accept 200,201,204,429 --exclude 'github.com/HasanBasriTaskin/CMS21-Together-SeparateEconomy' '**/*.md'
+          fail: true
