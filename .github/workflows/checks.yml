@@ -54,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check markdown links
-        uses: lycheeverse/lychee-action@v2.4.1
+        uses: lycheeverse/lychee-action@v2.9.0
         with:
           # 429 (rate limit) is accepted; the repository's own URL is excluded so the check also passes before the repo is public.
           args: --no-progress --max-retries 2 --accept 200,201,204,429 --exclude 'github.com/HasanBasriTaskin/CMS21-Together-SeparateEconomy' '**/*.md'
