@@ -16,7 +16,7 @@ jobs:
   privacy-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Private IP addresses, GUIDs, Windows user paths
         shell: bash
         run: |
@@ -40,7 +40,7 @@ jobs:
   no-binaries:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: No game or third-party binaries tracked
         shell: bash
         run: |
@@ -52,7 +52,7 @@ jobs:
   markdown-links:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check markdown links
         uses: lycheeverse/lychee-action@v2.4.1
         with:
